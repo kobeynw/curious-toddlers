@@ -32,3 +32,5 @@ A website to help parents looking for activities, organization, and connection w
 - [BONUS] Child Development Journal Page (6 hours)
 - [BONUS] Donations Page (10 hours)
 
+### mySQL ERD
+![curious-toddlers-erd](./curious-toddlers-erd.jpg)
