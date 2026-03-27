@@ -34,3 +34,6 @@ A website to help parents looking for activities, organization, and connection w
 
 ### mySQL ERD
 ![curious-toddlers-erd](./curious-toddlers-erd.jpg)
+
+### System Design
+![curious_toddlers_system_design](./curious_toddlers_system_design.svg)
