@@ -29,6 +29,25 @@ npm run dev:frontend       # Vite dev server on http://localhost:5173
 npm run dev:backend        # Express server on http://localhost:3000 (nodemon)
 ```
 
+### Database
+Local MySQL must be running. Create the database:
+```sql
+CREATE DATABASE curious_toddlers;
+```
+
+Configure credentials:
+```bash
+cp backend/.env.example backend/.env  # then edit DB_USER, DB_PASSWORD
+```
+
+Run migrations:
+```bash
+npm run migrate            # Apply all pending migrations
+npm run migrate:down       # Revert the last migration
+```
+
+Migration files live in `backend/db/migrations/` using the naming convention `NNN_description.up.sql` and `NNN_description.down.sql`.
+
 ### Other Commands
 ```bash
 npm run build:frontend     # Production build (outputs to frontend/dist/)
@@ -39,6 +58,9 @@ npm run start:backend      # Start backend without nodemon
 - `frontend/` — React + Vite app (separate npm project)
 - `backend/` — Express API (separate npm project)
 - `backend/routes/` — Express route modules, mounted at `/api`
+- `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
+- `backend/db/migrate.js` — Custom migration runner CLI
+- `backend/db/migrations/` — Numbered `.up.sql` / `.down.sql` migration files
 - Root `package.json` has convenience scripts only, no dependencies
 
 ## Architecture
