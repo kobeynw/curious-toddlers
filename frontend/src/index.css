@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@theme {
+  /* Sand — base & background */
+  --color-sand: #FAF7F2;
+  --color-sand-surface: #F0EBE0;
+  --color-sand-border: #E0D8CE;
+
+  /* Text */
+  --color-ink: #3D3530;
+  --color-ink-muted: #7A6E67;
+
+  /* Terracotta — primary / CTAs */
+  --color-terra-light: #F5D5CA;
+  --color-terra: #C1694F;
+  --color-terra-hover: #A8503A;
+  --color-terra-dark: #6E2E1E;
+
+  /* Sage — navigation / secondary */
+  --color-sage-light: #C8DEC9;
+  --color-sage: #7A9E7E;
+  --color-sage-hover: #5C8060;
+  --color-sage-dark: #2E5431;
+
+  /* Honey — tags / highlights */
+  --color-honey-light: #FAE4B8;
+  --color-honey: #D4943A;
+  --color-honey-hover: #B57520;
+  --color-honey-dark: #7A4A10;
+
+  /* Sky — calendar / informational */
+  --color-sky-light: #C8DFEE;
+  --color-sky: #6B9EB8;
+  --color-sky-hover: #4A7A99;
+  --color-sky-dark: #2A5E7A;
+}
