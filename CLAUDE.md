@@ -58,6 +58,8 @@ npm run start:backend      # Start backend without nodemon
 - `frontend/` — React + Vite app (separate npm project)
 - `backend/` — Express API (separate npm project)
 - `backend/routes/` — Express route modules, mounted at `/api`
+- `backend/routes/auth.js` — Auth routes (`/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`)
+- `backend/middleware/auth.js` — JWT verification middleware (use `authenticate` to protect routes)
 - `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
 - `backend/db/migrate.js` — Custom migration runner CLI
 - `backend/db/migrations/` — Numbered `.up.sql` / `.down.sql` migration files

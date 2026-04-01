@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const authRoutes = require('./auth');
 
 router.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -14,5 +15,7 @@ router.get('/health/db', async (req, res) => {
     res.status(500).json({ status: 'error', database: err.message });
   }
 });
+
+router.use('/auth', authRoutes);
 
 module.exports = router;
