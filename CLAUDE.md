@@ -65,6 +65,7 @@ npm run start:backend      # Start backend without nodemon
 - `backend/` — Express API (separate npm project)
 - `backend/routes/` — Express route modules, mounted at `/api`
 - `backend/routes/auth.js` — Auth routes (`/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`)
+- `backend/routes/activities.js` — Activity routes (`GET /api/activities` with pagination, search, filters)
 - `backend/middleware/auth.js` — JWT verification middleware (use `authenticate` to protect routes)
 - `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
 - `backend/db/migrate.js` — Custom migration runner CLI
