@@ -63,6 +63,9 @@ npm run start:backend      # Start backend without nodemon
 - `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
 - `backend/db/migrate.js` — Custom migration runner CLI
 - `backend/db/migrations/` — Numbered `.up.sql` / `.down.sql` migration files
+- `frontend/src/utils/api.js` — Fetch wrapper (prepends `VITE_API_URL`, includes credentials, throws on error)
+- `frontend/src/context/AuthContext.jsx` — Auth state provider (`AuthProvider`, `useAuth` hook)
+- `frontend/src/components/ProtectedRoute.jsx` — Route guard (redirects to `/login` if not authenticated)
 - Root `package.json` has convenience scripts only, no dependencies
 
 ## Architecture

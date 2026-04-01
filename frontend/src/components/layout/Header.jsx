@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const navLinks = [
   { to: '/', label: 'Home' },
@@ -17,6 +18,7 @@ function navLinkClass({ isActive }) {
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, loading, logout } = useAuth();
 
   return (
     <header className="bg-sand border-b border-sand-border">
@@ -33,15 +35,31 @@ export default function Header() {
             </NavLink>
           ))}
           <span className="w-px h-5 bg-sand-border" />
-          <NavLink to="/login" className={navLinkClass}>
-            Log in
-          </NavLink>
-          <Link
-            to="/register"
-            className="bg-terra text-sand px-3 py-1 rounded-md hover:bg-terra-hover transition-colors text-sm font-medium"
-          >
-            Register
-          </Link>
+          {!loading && (
+            user ? (
+              <>
+                <span className="text-sm text-ink-muted">Hi, {user.name}</span>
+                <button
+                  onClick={logout}
+                  className="text-ink-muted hover:text-terra transition-colors text-sm"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className={navLinkClass}>
+                  Log in
+                </NavLink>
+                <Link
+                  to="/register"
+                  className="bg-terra text-sand px-3 py-1 rounded-md hover:bg-terra-hover transition-colors text-sm font-medium"
+                >
+                  Register
+                </Link>
+              </>
+            )
+          )}
         </nav>
 
         {/* Mobile hamburger */}
@@ -70,16 +88,32 @@ export default function Header() {
               {label}
             </NavLink>
           ))}
-          <NavLink to="/login" className={navLinkClass} onClick={() => setIsOpen(false)}>
-            Log in
-          </NavLink>
-          <Link
-            to="/register"
-            className="bg-terra text-sand px-3 py-1 rounded-md hover:bg-terra-hover transition-colors text-sm font-medium w-fit"
-            onClick={() => setIsOpen(false)}
-          >
-            Register
-          </Link>
+          {!loading && (
+            user ? (
+              <>
+                <span className="text-sm text-ink-muted">Hi, {user.name}</span>
+                <button
+                  onClick={() => { logout(); setIsOpen(false); }}
+                  className="text-ink-muted hover:text-terra transition-colors text-sm text-left"
+                >
+                  Log out
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink to="/login" className={navLinkClass} onClick={() => setIsOpen(false)}>
+                  Log in
+                </NavLink>
+                <Link
+                  to="/register"
+                  className="bg-terra text-sand px-3 py-1 rounded-md hover:bg-terra-hover transition-colors text-sm font-medium w-fit"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Register
+                </Link>
+              </>
+            )
+          )}
         </nav>
       )}
     </header>
