@@ -64,8 +64,6 @@ npm run start:backend      # Start backend without nodemon
 - `frontend/` — React + Vite app (separate npm project)
 - `backend/` — Express API (separate npm project)
 - `backend/routes/` — Express route modules, mounted at `/api`
-- `backend/routes/auth.js` — Auth routes (`/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`)
-- `backend/routes/activities.js` — Activity routes (`GET /api/activities` with pagination, search, filters)
 - `backend/middleware/auth.js` — JWT verification middleware (use `authenticate` to protect routes)
 - `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
 - `backend/db/migrate.js` — Custom migration runner CLI
@@ -78,10 +76,6 @@ npm run start:backend      # Start backend without nodemon
 ## Architecture
 
 Three-tier architecture: React SPA (Vercel) → Express REST API (DigitalOcean) → MySQL database (DigitalOcean). See `curious_toddlers_system_design.svg` for the full diagram and `curious-toddlers-erd.jpg` for the database ERD.
-
-## Project Status
-
-This project is in early development. Initial project setup (React+Vite frontend, Express backend) is complete. Feature development is in progress.
 
 ## Planned Features
 
