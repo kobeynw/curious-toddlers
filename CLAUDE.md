@@ -48,6 +48,12 @@ npm run migrate:down       # Revert the last migration
 
 Migration files live in `backend/db/migrations/` using the naming convention `NNN_description.up.sql` and `NNN_description.down.sql`.
 
+### Testing
+```bash
+npm run test --prefix backend    # Jest unit tests
+npm run test --prefix frontend   # Vitest unit tests
+```
+
 ### Other Commands
 ```bash
 npm run build:frontend     # Production build (outputs to frontend/dist/)
