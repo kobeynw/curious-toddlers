@@ -25,6 +25,22 @@ function makeResponse(activities = [], nextCursor = null) {
   return { activities, nextCursor };
 }
 
+// Helper: sets up the api mock to return tags for /api/tags and the given
+// response for /api/activities. Accepts a single response or a function.
+function mockApi(activitiesResponse) {
+  const responseFn =
+    typeof activitiesResponse === 'function'
+      ? activitiesResponse
+      : () => Promise.resolve(activitiesResponse);
+
+  api.mockImplementation((path) => {
+    if (path.startsWith('/api/tags')) {
+      return Promise.resolve({ tags: [] });
+    }
+    return responseFn(path);
+  });
+}
+
 beforeEach(() => {
   vi.resetAllMocks();
   vi.useFakeTimers({ shouldAdvanceTime: true });
@@ -38,7 +54,7 @@ afterEach(() => {
 describe('ActivitiesPage', () => {
   it('shows loading state then renders activities table', async () => {
     const activity = makeActivity();
-    api.mockResolvedValueOnce(makeResponse([activity]));
+    mockApi(makeResponse([activity]));
 
     render(<ActivitiesPage />);
 
@@ -54,7 +70,7 @@ describe('ActivitiesPage', () => {
   });
 
   it('renders table columns', async () => {
-    api.mockResolvedValueOnce(makeResponse([makeActivity()]));
+    mockApi(makeResponse([makeActivity()]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -71,7 +87,7 @@ describe('ActivitiesPage', () => {
   });
 
   it('shows empty state when no activities returned', async () => {
-    api.mockResolvedValueOnce(makeResponse([]));
+    mockApi(makeResponse([]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -84,7 +100,7 @@ describe('ActivitiesPage', () => {
   });
 
   it('shows error message on fetch failure', async () => {
-    api.mockRejectedValueOnce(new Error('Network error'));
+    mockApi(() => Promise.reject(new Error('Network error')));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -101,16 +117,17 @@ describe('ActivitiesPage', () => {
       makeActivity({ id: 3, duration: 90 }),
       makeActivity({ id: 4, duration: null }),
     ];
-    api.mockResolvedValueOnce(makeResponse(activities));
+    mockApi(makeResponse(activities));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
-      expect(screen.getByText('15 min')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
     const table = screen.getByRole('table');
+    expect(within(table).getByText('15 min')).toBeInTheDocument();
     expect(within(table).getByText('1 hr')).toBeInTheDocument();
     expect(within(table).getByText('1 hr 30 min')).toBeInTheDocument();
   });
@@ -123,16 +140,17 @@ describe('ActivitiesPage', () => {
       makeActivity({ id: 4, min_age: 18 }),
       makeActivity({ id: 5, min_age: null }),
     ];
-    api.mockResolvedValueOnce(makeResponse(activities));
+    mockApi(makeResponse(activities));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
-      expect(screen.getByText('Newborn+')).toBeInTheDocument();
+      expect(screen.getByRole('table')).toBeInTheDocument();
     });
 
     const table = screen.getByRole('table');
+    expect(within(table).getByText('Newborn+')).toBeInTheDocument();
     expect(within(table).getByText('6 mo+')).toBeInTheDocument();
     expect(within(table).getByText('1 yr+')).toBeInTheDocument();
     expect(within(table).getByText('1 yr 6 mo+')).toBeInTheDocument();
@@ -140,7 +158,7 @@ describe('ActivitiesPage', () => {
 
   it('truncates long description text', async () => {
     const longDesc = 'A'.repeat(120);
-    api.mockResolvedValueOnce(makeResponse([makeActivity({ description: longDesc })]));
+    mockApi(makeResponse([makeActivity({ description: longDesc })]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -152,7 +170,7 @@ describe('ActivitiesPage', () => {
 
   it('debounces search input before fetching', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    api.mockResolvedValue(makeResponse([makeActivity()]));
+    mockApi(makeResponse([makeActivity()]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -181,7 +199,7 @@ describe('ActivitiesPage', () => {
 
   it('sends min_age param when age filter is selected', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    api.mockResolvedValue(makeResponse([makeActivity()]));
+    mockApi(makeResponse([makeActivity()]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -204,7 +222,7 @@ describe('ActivitiesPage', () => {
 
   it('sends max_duration param when duration filter is selected', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
-    api.mockResolvedValue(makeResponse([makeActivity()]));
+    mockApi(makeResponse([makeActivity()]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -226,7 +244,7 @@ describe('ActivitiesPage', () => {
   });
 
   it('renders search input and filter dropdowns', async () => {
-    api.mockResolvedValueOnce(makeResponse([]));
+    mockApi(makeResponse([]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -240,7 +258,7 @@ describe('ActivitiesPage', () => {
   });
 
   it('calls api with no filter params on initial load', async () => {
-    api.mockResolvedValueOnce(makeResponse([]));
+    mockApi(makeResponse([]));
 
     render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
@@ -253,7 +271,7 @@ describe('ActivitiesPage', () => {
   });
 
   it('renders page heading', async () => {
-    api.mockResolvedValueOnce(makeResponse([]));
+    mockApi(makeResponse([]));
 
     render(<ActivitiesPage />);
 
@@ -266,7 +284,7 @@ describe('ActivitiesPage', () => {
       makeActivity({ id: 2, title: 'Block Stacking' }),
       makeActivity({ id: 3, title: 'Story Time' }),
     ];
-    api.mockResolvedValue(makeResponse(activities));
+    mockApi(makeResponse(activities));
 
     render(<ActivitiesPage />);
     await act(async () => {

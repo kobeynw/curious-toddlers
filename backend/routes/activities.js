@@ -33,6 +33,17 @@ router.get('/', async (req, res) => {
       params.push(maxDuration);
     }
 
+    // Tag filtering (OR logic — activity matches if it has ANY of the selected tags)
+    const tagsParam = req.query.tags;
+    if (tagsParam && typeof tagsParam === 'string') {
+      const tagIds = tagsParam.split(',').map((s) => parseInt(s, 10)).filter((n) => !isNaN(n));
+      if (tagIds.length > 0) {
+        const placeholders = tagIds.map(() => '?').join(', ');
+        conditions.push(`id IN (SELECT activity_id FROM ActivityTag WHERE tag_id IN (${placeholders}))`);
+        params.push(...tagIds);
+      }
+    }
+
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
     const sql = `SELECT * FROM Activity ${where} ORDER BY id DESC LIMIT 21`;
 
@@ -42,6 +53,26 @@ router.get('/', async (req, res) => {
     if (rows.length === 21) {
       rows.pop();
       nextCursor = rows[rows.length - 1].id;
+    }
+
+    // Attach tags to each activity
+    if (rows.length > 0) {
+      const activityIds = rows.map((r) => r.id);
+      const tagPlaceholders = activityIds.map(() => '?').join(', ');
+      const [tagRows] = await pool.query(
+        `SELECT at.activity_id, t.id, t.name FROM ActivityTag at JOIN Tag t ON t.id = at.tag_id WHERE at.activity_id IN (${tagPlaceholders})`,
+        activityIds
+      );
+
+      const tagMap = {};
+      for (const row of tagRows) {
+        if (!tagMap[row.activity_id]) tagMap[row.activity_id] = [];
+        tagMap[row.activity_id].push({ id: row.id, name: row.name });
+      }
+
+      for (const activity of rows) {
+        activity.tags = tagMap[activity.id] || [];
+      }
     }
 
     res.json({ activities: rows, nextCursor });

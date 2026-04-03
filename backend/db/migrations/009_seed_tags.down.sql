@@ -1,0 +1,1 @@
+DELETE FROM Tag WHERE id > 0

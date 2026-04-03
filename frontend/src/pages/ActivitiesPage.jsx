@@ -34,11 +34,22 @@ export default function ActivitiesPage() {
   const [maxDuration, setMaxDuration] = useState('');
   const [error, setError] = useState('');
 
+  const [allTags, setAllTags] = useState([]);
+  const [selectedTagIds, setSelectedTagIds] = useState(new Set());
+  const [tagsExpanded, setTagsExpanded] = useState(false);
+
   const nextCursorRef = useRef(nextCursor);
   const loadingMoreRef = useRef(loadingMore);
 
   useEffect(() => { nextCursorRef.current = nextCursor; }, [nextCursor]);
   useEffect(() => { loadingMoreRef.current = loadingMore; }, [loadingMore]);
+
+  // Fetch all tags once on mount
+  useEffect(() => {
+    api('/api/tags')
+      .then((data) => setAllTags(data.tags))
+      .catch(() => {});
+  }, []);
 
   const fetchActivities = useCallback(async (cursor, append) => {
     if (append) {
@@ -54,6 +65,7 @@ export default function ActivitiesPage() {
       if (search.trim()) params.set('search', search.trim());
       if (minAge) params.set('min_age', minAge);
       if (maxDuration) params.set('max_duration', maxDuration);
+      if (selectedTagIds.size > 0) params.set('tags', [...selectedTagIds].join(','));
       if (cursor) params.set('cursor', cursor);
 
       const data = await api('/api/activities?' + params.toString());
@@ -70,7 +82,7 @@ export default function ActivitiesPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [search, minAge, maxDuration]);
+  }, [search, minAge, maxDuration, selectedTagIds]);
 
   // Debounced fetch on filter changes and initial mount
   useEffect(() => {
@@ -93,6 +105,26 @@ export default function ActivitiesPage() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [fetchActivities]);
+
+  function toggleTag(tagId) {
+    setSelectedTagIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(tagId)) {
+        next.delete(tagId);
+      } else {
+        next.add(tagId);
+      }
+      return next;
+    });
+  }
+
+  function selectAllTags() {
+    setSelectedTagIds(new Set(allTags.map((t) => t.id)));
+  }
+
+  function clearAllTags() {
+    setSelectedTagIds(new Set());
+  }
 
   const inputClass =
     'border border-sand-border rounded-md px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-terra';
@@ -145,6 +177,69 @@ export default function ActivitiesPage() {
         </div>
       </div>
 
+      {/* Tag filter */}
+      {allTags.length > 0 && (
+        <div className="bg-sand-surface rounded-lg shadow p-4 mb-6">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setTagsExpanded((prev) => !prev)}
+              className="flex items-center gap-2 text-ink font-medium"
+            >
+              <svg
+                className={`w-4 h-4 transition-transform ${tagsExpanded ? 'rotate-90' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              Tags
+              {selectedTagIds.size > 0 && (
+                <span className="bg-honey text-white text-xs rounded-full px-2 py-0.5">
+                  {selectedTagIds.size}
+                </span>
+              )}
+            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={selectAllTags}
+                className="text-sm text-honey-dark hover:text-honey-hover"
+              >
+                Select All
+              </button>
+              <button
+                type="button"
+                onClick={clearAllTags}
+                className="text-sm text-honey-dark hover:text-honey-hover"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+
+          {tagsExpanded && (
+            <div className="flex flex-wrap gap-2 mt-4">
+              {allTags.map((tag) => (
+                <button
+                  key={tag.id}
+                  type="button"
+                  onClick={() => toggleTag(tag.id)}
+                  className={
+                    selectedTagIds.has(tag.id)
+                      ? 'bg-honey text-white rounded-full px-3 py-1 text-sm hover:bg-honey-hover'
+                      : 'bg-white border border-sand-border text-ink-muted rounded-full px-3 py-1 text-sm hover:bg-honey-light'
+                  }
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Error state */}
       {error && (
         <div className="bg-terra-light text-terra-dark text-sm rounded p-3 mb-4">
@@ -175,6 +270,7 @@ export default function ActivitiesPage() {
                 <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Duration</th>
                 <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Supplies</th>
                 <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Min Age</th>
+                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Tags</th>
               </tr>
             </thead>
             <tbody>
@@ -185,6 +281,18 @@ export default function ActivitiesPage() {
                   <td className="px-3 py-3 text-ink text-sm">{formatDuration(activity.duration)}</td>
                   <td className="px-3 py-3 text-ink-muted text-sm">{truncate(activity.supplies, 80)}</td>
                   <td className="px-3 py-3 text-ink text-sm">{formatAge(activity.min_age)}+</td>
+                  <td className="px-3 py-3 text-sm">
+                    {activity.tags && activity.tags.length > 0
+                      ? activity.tags.map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="inline-block bg-honey-light text-honey-dark rounded-full px-2 py-0.5 text-xs mr-1 mb-1"
+                          >
+                            {tag.name}
+                          </span>
+                        ))
+                      : '\u2014'}
+                  </td>
                 </tr>
               ))}
             </tbody>

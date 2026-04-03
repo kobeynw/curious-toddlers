@@ -6,4 +6,5 @@
 | 03/28/26    | Initial project setup     | 3     |
 | 03/31/26    | User account flow         | 3     |
 | 04/01/26    | Activities Repository     | 1.5   |
-| Total Hours |                           | 11    |
+| 04/02/26    | Activities Repository     | 1.5   |
+| Total Hours |                           | 12.5  |

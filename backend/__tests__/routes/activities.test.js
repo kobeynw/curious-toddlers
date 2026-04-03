@@ -62,6 +62,7 @@ describe('GET /api/activities', () => {
   it('returns activities with no filters', async () => {
     const rows = makeActivities(5);
     pool.query.mockResolvedValueOnce([rows]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities');
     expect(res.status).toBe(200);
@@ -81,6 +82,7 @@ describe('GET /api/activities', () => {
   it('returns nextCursor when more than 20 results', async () => {
     const rows = makeActivities(21, 30);
     pool.query.mockResolvedValueOnce([rows]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities');
     expect(res.status).toBe(200);
@@ -91,6 +93,7 @@ describe('GET /api/activities', () => {
   it('returns null nextCursor when exactly 20 results', async () => {
     const rows = makeActivities(20);
     pool.query.mockResolvedValueOnce([rows]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities');
     expect(res.status).toBe(200);
@@ -100,6 +103,7 @@ describe('GET /api/activities', () => {
 
   it('applies cursor parameter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(5)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?cursor=15');
     expect(res.status).toBe(200);
@@ -111,6 +115,7 @@ describe('GET /api/activities', () => {
 
   it('applies search parameter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(2)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?search=sensory');
     expect(res.status).toBe(200);
@@ -123,6 +128,7 @@ describe('GET /api/activities', () => {
 
   it('applies min_age filter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?min_age=24');
     expect(res.status).toBe(200);
@@ -134,6 +140,7 @@ describe('GET /api/activities', () => {
 
   it('applies max_duration filter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?max_duration=30');
     expect(res.status).toBe(200);
@@ -145,6 +152,7 @@ describe('GET /api/activities', () => {
 
   it('combines multiple filters with AND logic', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(2)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?search=art&min_age=36&max_duration=60');
     expect(res.status).toBe(200);
@@ -158,6 +166,7 @@ describe('GET /api/activities', () => {
 
   it('ignores invalid cursor (non-numeric)', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?cursor=abc');
     expect(res.status).toBe(200);
@@ -168,6 +177,7 @@ describe('GET /api/activities', () => {
 
   it('ignores empty search parameter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?search=');
     expect(res.status).toBe(200);
@@ -178,6 +188,7 @@ describe('GET /api/activities', () => {
 
   it('ignores invalid min_age (non-numeric)', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?min_age=abc');
     expect(res.status).toBe(200);
@@ -188,6 +199,7 @@ describe('GET /api/activities', () => {
 
   it('ignores invalid max_duration (non-numeric)', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?max_duration=xyz');
     expect(res.status).toBe(200);
@@ -198,6 +210,7 @@ describe('GET /api/activities', () => {
 
   it('orders results by id DESC', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     await request('GET', '/api/activities');
 
@@ -207,6 +220,7 @@ describe('GET /api/activities', () => {
 
   it('limits results to 21', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     await request('GET', '/api/activities');
 
@@ -227,6 +241,7 @@ describe('GET /api/activities', () => {
 
   it('combines cursor with other filters', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(2)]);
+    pool.query.mockResolvedValueOnce([[]]); // tags query
 
     const res = await request('GET', '/api/activities?cursor=50&search=paint&min_age=18');
     expect(res.status).toBe(200);
