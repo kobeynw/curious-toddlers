@@ -1,23 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import api from '../utils/api';
-
-function formatDuration(minutes) {
-  if (!minutes) return '\u2014';
-  if (minutes < 60) return `${minutes} min`;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return m ? `${h} hr ${m} min` : `${h} hr`;
-}
-
-function formatAge(months) {
-  if (months == null) return '\u2014';
-  if (months === 0) return 'Newborn';
-  if (months < 12) return `${months} mo`;
-  const years = Math.floor(months / 12);
-  const rem = months % 12;
-  if (rem === 0) return `${years} yr`;
-  return `${years} yr ${rem} mo`;
-}
+import { useAuth } from '../context/AuthContext';
+import { formatDuration, formatAge } from '../utils/format';
+import AddToCalendarModal from '../components/AddToCalendarModal';
 
 function truncate(text, max = 100) {
   if (!text) return '\u2014';
@@ -25,6 +10,7 @@ function truncate(text, max = 100) {
 }
 
 export default function ActivitiesPage() {
+  const { user } = useAuth();
   const [activities, setActivities] = useState([]);
   const [nextCursor, setNextCursor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +23,7 @@ export default function ActivitiesPage() {
   const [allTags, setAllTags] = useState([]);
   const [selectedTagIds, setSelectedTagIds] = useState(new Set());
   const [tagsExpanded, setTagsExpanded] = useState(false);
+  const [calendarActivity, setCalendarActivity] = useState(null);
 
   const nextCursorRef = useRef(nextCursor);
   const loadingMoreRef = useRef(loadingMore);
@@ -124,6 +111,13 @@ export default function ActivitiesPage() {
 
   function clearAllTags() {
     setSelectedTagIds(new Set());
+  }
+
+  async function handleAddToCalendar(activityId, days) {
+    await api('/api/calendar/activities', {
+      method: 'POST',
+      body: JSON.stringify({ activityId, days }),
+    });
   }
 
   const inputClass =
@@ -271,6 +265,7 @@ export default function ActivitiesPage() {
                 <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Supplies</th>
                 <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Min Age</th>
                 <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Tags</th>
+                {user && <th className="text-left text-sm font-medium text-ink-muted px-3 py-2"></th>}
               </tr>
             </thead>
             <tbody>
@@ -293,6 +288,18 @@ export default function ActivitiesPage() {
                         ))
                       : '\u2014'}
                   </td>
+                  {user && (
+                    <td className="px-3 py-3">
+                      <button
+                        type="button"
+                        onClick={() => setCalendarActivity(activity)}
+                        className="bg-sky text-white rounded-md px-2 py-1 text-xs hover:bg-sky-hover"
+                        title="Add to calendar"
+                      >
+                        +
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -304,6 +311,12 @@ export default function ActivitiesPage() {
       {loadingMore && (
         <p className="text-center text-ink-muted py-4">Loading more...</p>
       )}
+
+      <AddToCalendarModal
+        activity={calendarActivity}
+        onClose={() => setCalendarActivity(null)}
+        onAdd={handleAddToCalendar}
+      />
     </div>
   );
 }

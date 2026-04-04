@@ -7,6 +7,10 @@ vi.mock('../../src/utils/api', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('../../src/context/AuthContext', () => ({
+  useAuth: () => ({ user: null, loading: false }),
+}));
+
 import api from '../../src/utils/api';
 
 function makeActivity(overrides = {}) {

@@ -9,6 +9,7 @@ import LearnPage from './pages/LearnPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   return (
@@ -19,7 +20,7 @@ export default function App() {
             <Route index element={<HomePage />} />
             <Route path="about" element={<AboutPage />} />
             <Route path="activities" element={<ActivitiesPage />} />
-            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
             <Route path="learn" element={<LearnPage />} />
             <Route path="login" element={<LoginPage />} />
             <Route path="register" element={<RegisterPage />} />

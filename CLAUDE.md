@@ -71,6 +71,8 @@ npm run start:backend      # Start backend without nodemon
 - `frontend/src/utils/api.js` — Fetch wrapper (prepends `VITE_API_URL`, includes credentials, throws on error)
 - `frontend/src/context/AuthContext.jsx` — Auth state provider (`AuthProvider`, `useAuth` hook)
 - `frontend/src/components/ProtectedRoute.jsx` — Route guard (redirects to `/login` if not authenticated)
+- `frontend/src/components/Modal.jsx` — Reusable modal overlay component (portal-based, Escape to close)
+- `frontend/src/utils/format.js` — Shared formatting helpers (`formatDuration`, `formatAge`)
 - Root `package.json` has convenience scripts only, no dependencies
 
 ## Architecture

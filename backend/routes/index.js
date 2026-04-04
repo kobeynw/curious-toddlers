@@ -3,6 +3,7 @@ const router = express.Router();
 const authRoutes = require('./auth');
 const activityRoutes = require('./activities');
 const tagRoutes = require('./tags');
+const calendarRoutes = require('./calendar');
 
 router.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -21,5 +22,6 @@ router.get('/health/db', async (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/activities', activityRoutes);
 router.use('/tags', tagRoutes);
+router.use('/calendar', calendarRoutes);
 
 module.exports = router;
