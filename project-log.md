@@ -8,4 +8,5 @@
 | 04/01/26    | Activities Repository     | 1.5   |
 | 04/02/26    | Activities Repository     | 1.5   |
 | 04/03/26    | Activities Calendar       | 2     |
-| Total Hours |                           | 14.5  |
+| 04/04/26    | About and Learn Pages     | 1     |
+| Total Hours |                           | 15.5  |
