@@ -94,7 +94,6 @@ router.post('/activities', async (req, res) => {
       return res.status(404).json({ error: 'Activity not found' });
     }
 
-    // Get or create calendar
     let [calendars] = await pool.query('SELECT id FROM Calendar WHERE user_id = ?', [req.user.id]);
     let calendarId;
     if (calendars.length === 0) {
