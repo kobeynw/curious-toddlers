@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import logo from '../../assets/curious-toddlers-logo.svg';
 
 const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/activities', label: 'Activities' },
   { to: '/calendar', label: 'Calendar' },
   { to: '/learn', label: 'Learn' },
-  { to: '/about', label: 'About' },
 ];
 
 function navLinkClass({ isActive }) {
@@ -23,9 +23,12 @@ export default function Header() {
   return (
     <header className="bg-sand border-b border-sand-border">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-ink hover:text-terra transition-colors">
-          Curious Toddlers
-        </Link>
+        <div className="flex items-center gap-4">
+          <img src={logo} width={50}/>
+          <Link to="/" className="text-2xl font-bold text-ink hover:text-terra transition-colors">
+            Curious Toddlers
+          </Link>
+        </div>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6">
