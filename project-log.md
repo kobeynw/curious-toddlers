@@ -11,5 +11,5 @@
 | 04/04/26    | About and Learn Pages     | 1     |
 | 04/04/26    | Deploy to hosting service | 3     |
 | 04/06/26    | Add custom styling        | 1     |
-| 04/07/26    | CI/CD setup               | 1     |
-| Total Hours |                           | 20.5  |
+| 04/07/26    | CI/CD setup               | 2.5   |
+| Total Hours |                           | 21    |

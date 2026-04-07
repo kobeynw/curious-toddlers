@@ -5,10 +5,12 @@ const activityRoutes = require('./activities');
 const tagRoutes = require('./tags');
 const calendarRoutes = require('./calendar');
 
+// GET /api/health
 router.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+// GET /api/health/db
 router.get('/health/db', async (req, res) => {
   try {
     const pool = require('../db/pool');
