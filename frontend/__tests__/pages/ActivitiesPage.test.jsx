@@ -73,7 +73,7 @@ describe('ActivitiesPage', () => {
     expect(screen.queryByText('Loading activities...')).not.toBeInTheDocument();
   });
 
-  it('renders table columns', async () => {
+  it('renders activity cards with title, duration, age, and description', async () => {
     mockApi(makeResponse([makeActivity()]));
 
     render(<ActivitiesPage />);
@@ -83,11 +83,10 @@ describe('ActivitiesPage', () => {
       expect(screen.getByText('Finger Painting')).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Title')).toBeInTheDocument();
-    expect(screen.getByText('Description')).toBeInTheDocument();
-    expect(screen.getByText('Duration')).toBeInTheDocument();
-    expect(screen.getByText('Supplies')).toBeInTheDocument();
-    expect(screen.getByText('Min Age')).toBeInTheDocument();
+    const card = screen.getByText('Finger Painting').closest('div.bg-sand-surface');
+    expect(within(card).getByText('30 min')).toBeInTheDocument();
+    expect(within(card).getByText('1 yr+')).toBeInTheDocument();
+    expect(within(card).getByText('A fun sensory activity with paint.')).toBeInTheDocument();
   });
 
   it('shows empty state when no activities returned', async () => {
@@ -114,12 +113,11 @@ describe('ActivitiesPage', () => {
     });
   });
 
-  it('formats duration correctly in table cells', async () => {
+  it('formats duration correctly in activity cards', async () => {
     const activities = [
-      makeActivity({ id: 1, duration: 15 }),
-      makeActivity({ id: 2, duration: 60 }),
-      makeActivity({ id: 3, duration: 90 }),
-      makeActivity({ id: 4, duration: null }),
+      makeActivity({ id: 1, title: 'Quick', duration: 15 }),
+      makeActivity({ id: 2, title: 'Medium', duration: 60 }),
+      makeActivity({ id: 3, title: 'Long', duration: 90 }),
     ];
     mockApi(makeResponse(activities));
 
@@ -127,22 +125,23 @@ describe('ActivitiesPage', () => {
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
-      expect(screen.getByRole('table')).toBeInTheDocument();
+      expect(screen.getByText('Quick')).toBeInTheDocument();
     });
 
-    const table = screen.getByRole('table');
-    expect(within(table).getByText('15 min')).toBeInTheDocument();
-    expect(within(table).getByText('1 hr')).toBeInTheDocument();
-    expect(within(table).getByText('1 hr 30 min')).toBeInTheDocument();
+    const quickCard = screen.getByText('Quick').closest('div.bg-sand-surface');
+    const mediumCard = screen.getByText('Medium').closest('div.bg-sand-surface');
+    const longCard = screen.getByText('Long').closest('div.bg-sand-surface');
+    expect(within(quickCard).getByText('15 min')).toBeInTheDocument();
+    expect(within(mediumCard).getByText('1 hr')).toBeInTheDocument();
+    expect(within(longCard).getByText('1 hr 30 min')).toBeInTheDocument();
   });
 
-  it('formats age correctly in table cells', async () => {
+  it('formats age correctly in activity cards', async () => {
     const activities = [
-      makeActivity({ id: 1, min_age: 0 }),
-      makeActivity({ id: 2, min_age: 6 }),
-      makeActivity({ id: 3, min_age: 12 }),
-      makeActivity({ id: 4, min_age: 18 }),
-      makeActivity({ id: 5, min_age: null }),
+      makeActivity({ id: 1, title: 'Baby', min_age: 0 }),
+      makeActivity({ id: 2, title: 'Infant', min_age: 6 }),
+      makeActivity({ id: 3, title: 'Toddler', min_age: 12 }),
+      makeActivity({ id: 4, title: 'Older', min_age: 18 }),
     ];
     mockApi(makeResponse(activities));
 
@@ -150,14 +149,17 @@ describe('ActivitiesPage', () => {
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
-      expect(screen.getByRole('table')).toBeInTheDocument();
+      expect(screen.getByText('Baby')).toBeInTheDocument();
     });
 
-    const table = screen.getByRole('table');
-    expect(within(table).getByText('Newborn+')).toBeInTheDocument();
-    expect(within(table).getByText('6 mo+')).toBeInTheDocument();
-    expect(within(table).getByText('1 yr+')).toBeInTheDocument();
-    expect(within(table).getByText('1 yr 6 mo+')).toBeInTheDocument();
+    const babyCard = screen.getByText('Baby').closest('div.bg-sand-surface');
+    const infantCard = screen.getByText('Infant').closest('div.bg-sand-surface');
+    const toddlerCard = screen.getByText('Toddler').closest('div.bg-sand-surface');
+    const olderCard = screen.getByText('Older').closest('div.bg-sand-surface');
+    expect(within(babyCard).getByText('Newborn+')).toBeInTheDocument();
+    expect(within(infantCard).getByText('6 mo+')).toBeInTheDocument();
+    expect(within(toddlerCard).getByText('1 yr+')).toBeInTheDocument();
+    expect(within(olderCard).getByText('1 yr 6 mo+')).toBeInTheDocument();
   });
 
   it('truncates long description text', async () => {
@@ -201,7 +203,7 @@ describe('ActivitiesPage', () => {
     expect(lastCall).toContain('search=paint');
   });
 
-  it('sends min_age param when age filter is selected', async () => {
+  it('sends age range params when age filter is changed', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mockApi(makeResponse([makeActivity()]));
 
@@ -212,19 +214,19 @@ describe('ActivitiesPage', () => {
       expect(screen.getByText('Finger Painting')).toBeInTheDocument();
     });
 
-    const ageSelect = screen.getByDisplayValue('Any Age');
-    await user.selectOptions(ageSelect, '36');
+    const ageSelects = screen.getByText('Age Range').parentElement.querySelectorAll('select');
+    await user.selectOptions(ageSelects[0], '24');
 
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
       const calls = api.mock.calls;
       const lastCall = calls[calls.length - 1][0];
-      expect(lastCall).toContain('min_age=36');
+      expect(lastCall).toContain('min_age_from=24');
     });
   });
 
-  it('sends max_duration param when duration filter is selected', async () => {
+  it('sends duration range params when duration filter is changed', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mockApi(makeResponse([makeActivity()]));
 
@@ -235,19 +237,19 @@ describe('ActivitiesPage', () => {
       expect(screen.getByText('Finger Painting')).toBeInTheDocument();
     });
 
-    const durationSelect = screen.getByDisplayValue('Any Duration');
-    await user.selectOptions(durationSelect, '30');
+    const durationSelects = screen.getByText('Duration Range').parentElement.querySelectorAll('select');
+    await user.selectOptions(durationSelects[1], '60');
 
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
       const calls = api.mock.calls;
       const lastCall = calls[calls.length - 1][0];
-      expect(lastCall).toContain('max_duration=30');
+      expect(lastCall).toContain('duration_to=60');
     });
   });
 
-  it('renders search input and filter dropdowns', async () => {
+  it('renders search input and range filter dropdowns', async () => {
     mockApi(makeResponse([]));
 
     render(<ActivitiesPage />);
@@ -257,11 +259,11 @@ describe('ActivitiesPage', () => {
       expect(screen.getByPlaceholderText('Search activities...')).toBeInTheDocument();
     });
 
-    expect(screen.getByDisplayValue('Any Age')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Any Duration')).toBeInTheDocument();
+    expect(screen.getByText('Age Range')).toBeInTheDocument();
+    expect(screen.getByText('Duration Range')).toBeInTheDocument();
   });
 
-  it('calls api with no filter params on initial load', async () => {
+  it('calls api with default range params on initial load', async () => {
     mockApi(makeResponse([]));
 
     render(<ActivitiesPage />);
@@ -271,7 +273,11 @@ describe('ActivitiesPage', () => {
       expect(api).toHaveBeenCalled();
     });
 
-    expect(api).toHaveBeenCalledWith('/api/activities?');
+    const activitiesCall = api.mock.calls.find((c) => c[0].startsWith('/api/activities'));
+    expect(activitiesCall[0]).toContain('min_age_from=0');
+    expect(activitiesCall[0]).toContain('min_age_to=72');
+    expect(activitiesCall[0]).toContain('duration_from=15');
+    expect(activitiesCall[0]).toContain('duration_to=120');
   });
 
   it('renders page heading', async () => {
