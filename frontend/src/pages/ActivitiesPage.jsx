@@ -3,6 +3,29 @@ import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { formatDuration, formatAge } from '../utils/format';
 import AddToCalendarModal from '../components/AddToCalendarModal';
+import ActivityDetailModal from '../components/ActivityDetailModal';
+import { Timer, Baby } from 'lucide-react';
+
+const AGE_OPTIONS = [
+  { value: 0, label: 'Newborn' },
+  { value: 6, label: '6 mo' },
+  { value: 12, label: '1 yr' },
+  { value: 18, label: '1.5 yr' },
+  { value: 24, label: '2 yr' },
+  { value: 36, label: '3 yr' },
+  { value: 48, label: '4 yr' },
+  { value: 60, label: '5 yr' },
+  { value: 72, label: '6 yr' },
+];
+
+const DURATION_OPTIONS = [
+  { value: 15, label: '15 min' },
+  { value: 30, label: '30 min' },
+  { value: 45, label: '45 min' },
+  { value: 60, label: '1 hr' },
+  { value: 90, label: '1 hr 30 min' },
+  { value: 120, label: '2 hr' },
+];
 
 function truncate(text, max = 100) {
   if (!text) return '\u2014';
@@ -16,14 +39,17 @@ export default function ActivitiesPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState('');
-  const [minAge, setMinAge] = useState('');
-  const [maxDuration, setMaxDuration] = useState('');
+  const [ageFrom, setAgeFrom] = useState(0);
+  const [ageTo, setAgeTo] = useState(72);
+  const [durationFrom, setDurationFrom] = useState(15);
+  const [durationTo, setDurationTo] = useState(120);
   const [error, setError] = useState('');
 
   const [allTags, setAllTags] = useState([]);
   const [selectedTagIds, setSelectedTagIds] = useState(new Set());
   const [tagsExpanded, setTagsExpanded] = useState(false);
   const [calendarActivity, setCalendarActivity] = useState(null);
+  const [detailActivity, setDetailActivity] = useState(null);
 
   const nextCursorRef = useRef(nextCursor);
   const loadingMoreRef = useRef(loadingMore);
@@ -50,8 +76,10 @@ export default function ActivitiesPage() {
     try {
       const params = new URLSearchParams();
       if (search.trim()) params.set('search', search.trim());
-      if (minAge) params.set('min_age', minAge);
-      if (maxDuration) params.set('max_duration', maxDuration);
+      params.set('min_age_from', ageFrom);
+      params.set('min_age_to', ageTo);
+      params.set('duration_from', durationFrom);
+      params.set('duration_to', durationTo);
       if (selectedTagIds.size > 0) params.set('tags', [...selectedTagIds].join(','));
       if (cursor) params.set('cursor', cursor);
 
@@ -69,7 +97,7 @@ export default function ActivitiesPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [search, minAge, maxDuration, selectedTagIds]);
+  }, [search, ageFrom, ageTo, durationFrom, durationTo, selectedTagIds]);
 
   // Debounced fetch on filter changes and initial mount
   useEffect(() => {
@@ -121,118 +149,157 @@ export default function ActivitiesPage() {
   }
 
   const inputClass =
-    'border border-sand-border rounded-md px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-terra';
+    'border border-sand-border-dark rounded-md px-3 py-2 text-ink focus:outline-none focus:ring-2 focus:ring-terra';
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold text-ink mb-6">Activities</h1>
 
-      {/* Search and filter bar */}
-      <div className="bg-sand-surface rounded-lg shadow p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Search activities..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={`flex-1 ${inputClass}`}
-          />
+      {/* Search, filters, and tags */}
+      <div className="bg-sand-surface rounded-lg shadow p-4 mb-6 space-y-4">
+        {/* Search */}
+        <input
+          type="text"
+          placeholder="Search activities..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className={`w-full ${inputClass}`}
+        />
 
-          <select
-            value={minAge}
-            onChange={(e) => setMinAge(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Any Age</option>
-            <option value="0">Newborn+</option>
-            <option value="6">6 mo+</option>
-            <option value="12">1 yr+</option>
-            <option value="18">18 mo+</option>
-            <option value="24">2 yr+</option>
-            <option value="36">3 yr+</option>
-            <option value="48">4 yr+</option>
-            <option value="60">5 yr+</option>
-            <option value="72">6 yr+</option>
-          </select>
-
-          <select
-            value={maxDuration}
-            onChange={(e) => setMaxDuration(e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Any Duration</option>
-            <option value="15">15 min</option>
-            <option value="30">30 min</option>
-            <option value="45">45 min</option>
-            <option value="60">1 hr</option>
-            <option value="90">1 hr 30 min</option>
-            <option value="120">2 hr</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tag filter */}
-      {allTags.length > 0 && (
-        <div className="bg-sand-surface rounded-lg shadow p-4 mb-6">
-          <div className="flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => setTagsExpanded((prev) => !prev)}
-              className="flex items-center gap-2 text-ink font-medium"
-            >
-              <svg
-                className={`w-4 h-4 transition-transform ${tagsExpanded ? 'rotate-90' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              Tags
-              {selectedTagIds.size > 0 && (
-                <span className="bg-honey text-white text-xs rounded-full px-2 py-0.5">
-                  {selectedTagIds.size}
-                </span>
-              )}
-            </button>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={selectAllTags}
-                className="text-sm text-honey-dark hover:text-honey-hover"
-              >
-                Select All
-              </button>
-              <button
-                type="button"
-                onClick={clearAllTags}
-                className="text-sm text-honey-dark hover:text-honey-hover"
-              >
-                Clear All
-              </button>
+        {/* Range filters */}
+        <hr className="border-sand-border" />
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Age filter */}
+          <div className="flex-1">
+            <span className="text-sm font-medium text-ink mb-2 block">Age Range</span>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex flex-col gap-1">
+                <select
+                  value={ageFrom}
+                  onChange={(e) => setAgeFrom(parseInt(e.target.value, 10))}
+                  className={`w-full ${inputClass}`}
+                >
+                  {AGE_OPTIONS.filter((o) => o.value <= ageTo).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-ink-muted">to</span>
+              <div className="flex-1 flex flex-col gap-1">
+                <select
+                  value={ageTo}
+                  onChange={(e) => setAgeTo(parseInt(e.target.value, 10))}
+                  className={`w-full ${inputClass}`}
+                >
+                  {AGE_OPTIONS.filter((o) => o.value >= ageFrom).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
-          {tagsExpanded && (
-            <div className="flex flex-wrap gap-2 mt-4">
-              {allTags.map((tag) => (
-                <button
-                  key={tag.id}
-                  type="button"
-                  onClick={() => toggleTag(tag.id)}
-                  className={
-                    selectedTagIds.has(tag.id)
-                      ? 'bg-honey text-white rounded-full px-3 py-1 text-sm hover:bg-honey-hover'
-                      : 'bg-white border border-sand-border text-ink-muted rounded-full px-3 py-1 text-sm hover:bg-honey-light'
-                  }
+          {/* Divider */}
+          <div className="hidden md:block w-px bg-sand-border" />
+          <hr className="md:hidden border-sand-border" />
+
+          {/* Duration filter */}
+          <div className="flex-1">
+            <span className="text-sm font-medium text-ink mb-2 block">Duration Range</span>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 flex flex-col gap-1">
+                <select
+                  value={durationFrom}
+                  onChange={(e) => setDurationFrom(parseInt(e.target.value, 10))}
+                  className={`w-full ${inputClass}`}
                 >
-                  {tag.name}
-                </button>
-              ))}
+                  {DURATION_OPTIONS.filter((o) => o.value <= durationTo).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+              <span className="text-ink-muted">to</span>
+              <div className="flex-1 flex flex-col gap-1">
+                <select
+                  value={durationTo}
+                  onChange={(e) => setDurationTo(parseInt(e.target.value, 10))}
+                  className={`w-full ${inputClass}`}
+                >
+                  {DURATION_OPTIONS.filter((o) => o.value >= durationFrom).map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      )}
+
+        {/* Tags */}
+        {allTags.length > 0 && (
+          <>
+            <hr className="border-sand-border" />
+            <div>
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setTagsExpanded((prev) => !prev)}
+                  className="flex items-center gap-2 text-ink font-medium"
+                >
+                  <svg
+                    className={`w-4 h-4 transition-transform ${tagsExpanded ? 'rotate-90' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  Tags
+                  {selectedTagIds.size > 0 && (
+                    <span className="bg-honey text-white text-xs rounded-full px-2 py-0.5">
+                      {selectedTagIds.size}
+                    </span>
+                  )}
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllTags}
+                    className="text-sm text-honey-dark hover:text-honey-hover"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearAllTags}
+                    className="text-sm text-honey-dark hover:text-honey-hover"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+
+              {tagsExpanded && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {allTags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => toggleTag(tag.id)}
+                      className={
+                        selectedTagIds.has(tag.id)
+                          ? 'bg-honey text-white rounded-full px-3 py-1 text-sm hover:bg-honey-hover'
+                          : 'bg-white border border-sand-border text-ink-muted rounded-full px-3 py-1 text-sm hover:bg-honey-light'
+                      }
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Error state */}
       {error && (
@@ -253,57 +320,45 @@ export default function ActivitiesPage() {
         </p>
       )}
 
-      {/* Activities table */}
+      {/* Activity cards */}
       {!loading && activities.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-sand-border">
-                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Title</th>
-                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Description</th>
-                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Duration</th>
-                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Supplies</th>
-                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Min Age</th>
-                <th className="text-left text-sm font-medium text-ink-muted px-3 py-2">Tags</th>
-                {user && <th className="text-left text-sm font-medium text-ink-muted px-3 py-2"></th>}
-              </tr>
-            </thead>
-            <tbody>
-              {activities.map((activity) => (
-                <tr key={activity.id} className="border-b border-sand-border">
-                  <td className="px-3 py-3 text-ink font-medium">{activity.title}</td>
-                  <td className="px-3 py-3 text-ink-muted text-sm">{truncate(activity.description, 100)}</td>
-                  <td className="px-3 py-3 text-ink text-sm">{formatDuration(activity.duration)}</td>
-                  <td className="px-3 py-3 text-ink-muted text-sm">{truncate(activity.supplies, 80)}</td>
-                  <td className="px-3 py-3 text-ink text-sm">{formatAge(activity.min_age)}+</td>
-                  <td className="px-3 py-3 text-sm">
-                    {activity.tags && activity.tags.length > 0
-                      ? activity.tags.map((tag) => (
-                          <span
-                            key={tag.id}
-                            className="inline-block bg-honey-light text-honey-dark rounded-full px-2 py-0.5 text-xs mr-1 mb-1"
-                          >
-                            {tag.name}
-                          </span>
-                        ))
-                      : '\u2014'}
-                  </td>
-                  {user && (
-                    <td className="px-3 py-3">
-                      <button
-                        type="button"
-                        onClick={() => setCalendarActivity(activity)}
-                        className="bg-sky text-white rounded-md px-2 py-1 text-xs hover:bg-sky-hover"
-                        title="Add to calendar"
-                      >
-                        +
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {activities.map((activity) => (
+            <div
+              key={activity.id}
+              onClick={() =>
+                setDetailActivity({
+                  ...activity,
+                  minAge: activity.min_age,
+                })
+              }
+              className="bg-sand-surface border border-sand-border rounded-lg p-5 hover:shadow-md cursor-pointer transition-shadow flex flex-col"
+            >
+              <h2 className="text-lg font-semibold text-ink">{activity.title}</h2>
+
+              <div className="flex gap-4 mt-2 text-sm text-ink">
+                <span className="flex items-center gap-1"><Timer size={14} />{formatDuration(activity.duration)}</span>
+                <span className="flex items-center gap-1"><Baby size={14} />{formatAge(activity.min_age)}+</span>
+              </div>
+
+              <p className="text-ink-muted text-sm mt-2 flex-1">
+                {truncate(activity.description, 100)}
+              </p>
+
+              {user && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCalendarActivity(activity);
+                  }}
+                  className="mt-4 bg-terra text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-terra-hover self-start"
+                >
+                  Add to Calendar
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
@@ -316,6 +371,11 @@ export default function ActivitiesPage() {
         activity={calendarActivity}
         onClose={() => setCalendarActivity(null)}
         onAdd={handleAddToCalendar}
+      />
+
+      <ActivityDetailModal
+        activity={detailActivity}
+        onClose={() => setDetailActivity(null)}
       />
     </div>
   );

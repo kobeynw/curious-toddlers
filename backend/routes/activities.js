@@ -21,16 +21,18 @@ router.get('/', async (req, res) => {
       params.push(term, term);
     }
 
-    const minAge = parseInt(req.query.min_age, 10);
-    if (!isNaN(minAge)) {
-      conditions.push('min_age <= ?');
-      params.push(minAge);
+    const minAgeFrom = parseInt(req.query.min_age_from, 10);
+    const minAgeTo = parseInt(req.query.min_age_to, 10);
+    if (!isNaN(minAgeFrom) && !isNaN(minAgeTo)) {
+      conditions.push('min_age BETWEEN ? AND ?');
+      params.push(minAgeFrom, minAgeTo);
     }
 
-    const maxDuration = parseInt(req.query.max_duration, 10);
-    if (!isNaN(maxDuration)) {
-      conditions.push('duration <= ?');
-      params.push(maxDuration);
+    const durationFrom = parseInt(req.query.duration_from, 10);
+    const durationTo = parseInt(req.query.duration_to, 10);
+    if (!isNaN(durationFrom) && !isNaN(durationTo)) {
+      conditions.push('duration BETWEEN ? AND ?');
+      params.push(durationFrom, durationTo);
     }
 
     // Tag filtering (OR logic — activity matches if it has ANY of the selected tags)
