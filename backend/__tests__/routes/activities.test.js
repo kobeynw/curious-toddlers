@@ -126,27 +126,29 @@ describe('GET /api/activities', () => {
     expect(params).toContain('%sensory%');
   });
 
-  it('applies min_age filter', async () => {
+  it('applies min_age range filter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
     pool.query.mockResolvedValueOnce([[]]); // tags query
 
-    const res = await request('GET', '/api/activities?min_age=24');
+    const res = await request('GET', '/api/activities?min_age_from=12&min_age_to=24');
     expect(res.status).toBe(200);
 
     const [sql, params] = pool.query.mock.calls[0];
-    expect(sql).toContain('min_age <= ?');
+    expect(sql).toContain('min_age BETWEEN ? AND ?');
+    expect(params).toContain(12);
     expect(params).toContain(24);
   });
 
-  it('applies max_duration filter', async () => {
+  it('applies duration range filter', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
     pool.query.mockResolvedValueOnce([[]]); // tags query
 
-    const res = await request('GET', '/api/activities?max_duration=30');
+    const res = await request('GET', '/api/activities?duration_from=10&duration_to=30');
     expect(res.status).toBe(200);
 
     const [sql, params] = pool.query.mock.calls[0];
-    expect(sql).toContain('duration <= ?');
+    expect(sql).toContain('duration BETWEEN ? AND ?');
+    expect(params).toContain(10);
     expect(params).toContain(30);
   });
 
@@ -154,14 +156,14 @@ describe('GET /api/activities', () => {
     pool.query.mockResolvedValueOnce([makeActivities(2)]);
     pool.query.mockResolvedValueOnce([[]]); // tags query
 
-    const res = await request('GET', '/api/activities?search=art&min_age=36&max_duration=60');
+    const res = await request('GET', '/api/activities?search=art&min_age_from=24&min_age_to=36&duration_from=30&duration_to=60');
     expect(res.status).toBe(200);
 
     const [sql, params] = pool.query.mock.calls[0];
     expect(sql).toContain('title LIKE ?');
-    expect(sql).toContain('min_age <= ?');
-    expect(sql).toContain('duration <= ?');
-    expect(params).toEqual(['%art%', '%art%', 36, 60]);
+    expect(sql).toContain('min_age BETWEEN ? AND ?');
+    expect(sql).toContain('duration BETWEEN ? AND ?');
+    expect(params).toEqual(['%art%', '%art%', 24, 36, 30, 60]);
   });
 
   it('ignores invalid cursor (non-numeric)', async () => {
@@ -186,22 +188,22 @@ describe('GET /api/activities', () => {
     expect(sql).not.toContain('LIKE');
   });
 
-  it('ignores invalid min_age (non-numeric)', async () => {
+  it('ignores invalid min_age range (non-numeric)', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
     pool.query.mockResolvedValueOnce([[]]); // tags query
 
-    const res = await request('GET', '/api/activities?min_age=abc');
+    const res = await request('GET', '/api/activities?min_age_from=abc&min_age_to=24');
     expect(res.status).toBe(200);
 
     const [sql] = pool.query.mock.calls[0];
     expect(sql).not.toContain('min_age');
   });
 
-  it('ignores invalid max_duration (non-numeric)', async () => {
+  it('ignores invalid duration range (non-numeric)', async () => {
     pool.query.mockResolvedValueOnce([makeActivities(3)]);
     pool.query.mockResolvedValueOnce([[]]); // tags query
 
-    const res = await request('GET', '/api/activities?max_duration=xyz');
+    const res = await request('GET', '/api/activities?duration_from=xyz&duration_to=30');
     expect(res.status).toBe(200);
 
     const [sql] = pool.query.mock.calls[0];
@@ -243,13 +245,13 @@ describe('GET /api/activities', () => {
     pool.query.mockResolvedValueOnce([makeActivities(2)]);
     pool.query.mockResolvedValueOnce([[]]); // tags query
 
-    const res = await request('GET', '/api/activities?cursor=50&search=paint&min_age=18');
+    const res = await request('GET', '/api/activities?cursor=50&search=paint&min_age_from=12&min_age_to=18');
     expect(res.status).toBe(200);
 
     const [sql, params] = pool.query.mock.calls[0];
     expect(sql).toContain('id < ?');
     expect(sql).toContain('title LIKE ?');
-    expect(sql).toContain('min_age <= ?');
-    expect(params).toEqual([50, '%paint%', '%paint%', 18]);
+    expect(sql).toContain('min_age BETWEEN ? AND ?');
+    expect(params).toEqual([50, '%paint%', '%paint%', 12, 18]);
   });
 });

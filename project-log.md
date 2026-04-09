@@ -12,5 +12,5 @@
 | 04/04/26    | Deploy to hosting service | 3     |
 | 04/06/26    | Add custom styling        | 1     |
 | 04/07/26    | CI/CD setup               | 3.5   |
-| 04/08/26    | Activities Repository     | 1     |
-| Total Hours |                           | 23    |
+| 04/08/26    | Activities Repository     | 1.5   |
+| Total Hours |                           | 23.5  |
