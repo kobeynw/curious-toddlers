@@ -13,4 +13,5 @@
 | 04/06/26    | Add custom styling        | 1     |
 | 04/07/26    | CI/CD setup               | 3.5   |
 | 04/08/26    | Activities Repository     | 1.5   |
-| Total Hours |                           | 23.5  |
+| 04/10/26    | Update page content       | 2.5   |
+| Total Hours |                           | 26    |
