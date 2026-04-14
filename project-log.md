@@ -14,4 +14,6 @@
 | 04/07/26    | CI/CD setup               | 3.5   |
 | 04/08/26    | Activities Repository     | 1.5   |
 | 04/10/26    | Update page content       | 2.5   |
-| Total Hours |                           | 26    |
+| 04/13/26    | Project demo and feedback | 1     |
+| 04/13/26    | Project reports           | 0.5   |
+| Total Hours |                           | 27.05 |
