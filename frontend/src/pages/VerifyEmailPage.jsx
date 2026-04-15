@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 
 export default function VerifyEmailPage() {
   const { user, loading, logout, setVerified } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
@@ -41,6 +42,9 @@ export default function VerifyEmailPage() {
   }
 
   if (loading) return null;
+
+  // If not logged in and no token, redirect to login
+  if (!user && !token) return <Navigate to="/login" replace />;
 
   // If user is verified, redirect them away
   if (user?.isVerified) {
@@ -150,7 +154,7 @@ export default function VerifyEmailPage() {
 
         <div className="mt-6 pt-4 border-t border-sand-border">
           <button
-            onClick={logout}
+            onClick={() => { logout(); navigate('/login'); }}
             className="text-ink-muted hover:text-terra transition-colors text-sm"
           >
             Log out
