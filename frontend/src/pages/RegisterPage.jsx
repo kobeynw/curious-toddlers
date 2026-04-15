@@ -25,7 +25,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  if (!loading && user?.isVerified) return <Navigate to="/" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -37,7 +37,7 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await register(name, email, password);
-      navigate('/');
+      navigate('/verify-email');
     } catch (err) {
       setError(err.message);
     } finally {

@@ -20,6 +20,7 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ email, password }),
     });
     setUser(data.user);
+    return data.user;
   }
 
   async function register(name, email, password) {
@@ -38,8 +39,12 @@ export function AuthProvider({ children }) {
     }
   }
 
+  function setVerified() {
+    setUser((prev) => prev ? { ...prev, isVerified: true } : prev);
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, setVerified }}>
       {children}
     </AuthContext.Provider>
   );

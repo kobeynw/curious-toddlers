@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  if (!loading && user) return <Navigate to={user.isVerified ? '/' : '/verify-email'} replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -21,8 +21,8 @@ export default function LoginPage() {
 
     setSubmitting(true);
     try {
-      await login(email, password);
-      navigate('/');
+      const data = await login(email, password);
+      navigate(data?.isVerified ? '/' : '/verify-email');
     } catch (err) {
       setError(err.message);
     } finally {

@@ -6,5 +6,6 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
+  if (!user.isVerified) return <Navigate to="/verify-email" replace />;
   return children;
 }

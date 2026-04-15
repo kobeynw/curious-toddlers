@@ -16,4 +16,4 @@
 | 04/10/26    | Update page content       | 2.5   |
 | 04/13/26    | Project demo and feedback | 1     |
 | 04/13/26    | Project reports           | 0.5   |
-| Total Hours |                           | 27.05 |
+| Total Hours |                           | 27.5  |
