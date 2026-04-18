@@ -36,7 +36,7 @@ function buildCookieOptions() {
 
 function signToken(user) {
   return jwt.sign(
-    { id: user.id, email: user.email, name: user.name },
+    { id: user.id, email: user.email, name: user.name, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -89,7 +89,7 @@ router.post('/register', async (req, res) => {
       [name.trim(), normalizedEmail, passwordHash]
     );
 
-    const user = { id: result.insertId, name: name.trim(), email: normalizedEmail, isVerified: false };
+    const user = { id: result.insertId, name: name.trim(), email: normalizedEmail, isVerified: false, role: 'user' };
 
     // Generate verification token
     const plainToken = generateToken();
@@ -129,7 +129,7 @@ router.post('/login', async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     const [rows] = await pool.query(
-      'SELECT id, name, email, password_hash, is_verified FROM User WHERE email = ?',
+      'SELECT id, name, email, password_hash, is_verified, role FROM User WHERE email = ?',
       [normalizedEmail]
     );
 
@@ -143,7 +143,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const user = { id: dbUser.id, name: dbUser.name, email: dbUser.email, isVerified: !!dbUser.is_verified };
+    const user = { id: dbUser.id, name: dbUser.name, email: dbUser.email, isVerified: !!dbUser.is_verified, role: dbUser.role };
     const token = signToken(user);
 
     res.cookie('token', token, buildCookieOptions());
@@ -166,7 +166,7 @@ router.post('/logout', (req, res) => {
 router.get('/me', authenticate, async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, email, is_verified FROM User WHERE id = ?',
+      'SELECT id, name, email, is_verified, role FROM User WHERE id = ?',
       [req.user.id]
     );
     if (rows.length === 0) {
@@ -174,7 +174,7 @@ router.get('/me', authenticate, async (req, res) => {
     }
     const dbUser = rows[0];
     res.json({
-      user: { id: dbUser.id, name: dbUser.name, email: dbUser.email, isVerified: !!dbUser.is_verified },
+      user: { id: dbUser.id, name: dbUser.name, email: dbUser.email, isVerified: !!dbUser.is_verified, role: dbUser.role },
     });
   } catch (err) {
     console.error('Me error:', err);

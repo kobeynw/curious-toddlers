@@ -37,6 +37,11 @@ export default function Header() {
               {label}
             </NavLink>
           ))}
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" className={navLinkClass}>
+              Admin
+            </NavLink>
+          )}
           <span className="w-px h-5 bg-sand-border" />
           {!loading && (
             user ? (
@@ -91,6 +96,11 @@ export default function Header() {
               {label}
             </NavLink>
           ))}
+          {user?.role === 'admin' && (
+            <NavLink to="/admin" className={navLinkClass} onClick={() => setIsOpen(false)}>
+              Admin
+            </NavLink>
+          )}
           {!loading && (
             user ? (
               <>
