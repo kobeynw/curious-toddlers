@@ -65,12 +65,16 @@ npm run start:backend      # Start backend without nodemon
 - `backend/` — Express API (separate npm project)
 - `backend/routes/` — Express route modules, mounted at `/api`
 - `backend/middleware/auth.js` — JWT verification middleware (use `authenticate` to protect routes)
+- `backend/middleware/authorizeAdmin.js` — Admin authorization middleware (use after `authenticate` to protect admin-only routes)
+- `backend/routes/admin.js` — Admin activity routes (`POST`, `PUT`, `DELETE /api/admin/activities`)
 - `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
 - `backend/db/migrate.js` — Custom migration runner CLI
 - `backend/db/migrations/` — Numbered `.up.sql` / `.down.sql` migration files
 - `frontend/src/utils/api.js` — Fetch wrapper (prepends `VITE_API_URL`, includes credentials, throws on error)
 - `frontend/src/context/AuthContext.jsx` — Auth state provider (`AuthProvider`, `useAuth` hook)
 - `frontend/src/components/ProtectedRoute.jsx` — Route guard (redirects to `/login` if not authenticated)
+- `frontend/src/components/AdminRoute.jsx` — Admin route guard (redirects non-admin users to `/`)
+- `frontend/src/pages/AdminPage.jsx` — Admin activity management page (CRUD table with create/edit/delete modals)
 - `frontend/src/components/Modal.jsx` — Reusable modal overlay component (portal-based, Escape to close)
 - `frontend/src/utils/format.js` — Shared formatting helpers (`formatDuration`, `formatAge`)
 - Root `package.json` has convenience scripts only, no dependencies

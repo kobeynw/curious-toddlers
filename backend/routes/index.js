@@ -4,6 +4,7 @@ const authRoutes = require('./auth');
 const activityRoutes = require('./activities');
 const tagRoutes = require('./tags');
 const calendarRoutes = require('./calendar');
+const adminRoutes = require('./admin');
 
 // GET /api/health
 router.get('/health', (req, res) => {
@@ -25,5 +26,6 @@ router.use('/auth', authRoutes);
 router.use('/activities', activityRoutes);
 router.use('/tags', tagRoutes);
 router.use('/calendar', calendarRoutes);
+router.use('/admin/activities', adminRoutes);
 
 module.exports = router;

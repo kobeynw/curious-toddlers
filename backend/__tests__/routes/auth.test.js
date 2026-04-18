@@ -124,7 +124,7 @@ describe('POST /api/auth/register', () => {
 
     const res = await request('POST', '/api/auth/register', { name: 'Test', email: 'A@B.com', password: 'Pass1234' });
     expect(res.status).toBe(201);
-    expect(res.body.user).toEqual({ id: 42, name: 'Test', email: 'a@b.com', isVerified: false });
+    expect(res.body.user).toEqual({ id: 42, name: 'Test', email: 'a@b.com', isVerified: false, role: 'user' });
     expect(res.headers['set-cookie']).toBeDefined();
     expect(res.headers['set-cookie'][0]).toContain('token=fake-token');
   });
