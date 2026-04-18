@@ -19,6 +19,7 @@ const AGE_OPTIONS = [
 ];
 
 const DURATION_OPTIONS = [
+  { value: 5, label: '5 min' },
   { value: 15, label: '15 min' },
   { value: 30, label: '30 min' },
   { value: 45, label: '45 min' },
@@ -41,7 +42,7 @@ export default function ActivitiesPage() {
   const [search, setSearch] = useState('');
   const [ageFrom, setAgeFrom] = useState(0);
   const [ageTo, setAgeTo] = useState(72);
-  const [durationFrom, setDurationFrom] = useState(15);
+  const [durationFrom, setDurationFrom] = useState(5);
   const [durationTo, setDurationTo] = useState(120);
   const [error, setError] = useState('');
 

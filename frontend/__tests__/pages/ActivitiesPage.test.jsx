@@ -276,7 +276,7 @@ describe('ActivitiesPage', () => {
     const activitiesCall = api.mock.calls.find((c) => c[0].startsWith('/api/activities'));
     expect(activitiesCall[0]).toContain('min_age_from=0');
     expect(activitiesCall[0]).toContain('min_age_to=72');
-    expect(activitiesCall[0]).toContain('duration_from=15');
+    expect(activitiesCall[0]).toContain('duration_from=5');
     expect(activitiesCall[0]).toContain('duration_to=120');
   });
 
