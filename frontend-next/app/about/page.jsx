@@ -2,6 +2,7 @@ export const metadata = {
   title: 'About | Curious Toddlers',
   description:
     'Meet Kobey and learn the story and motivation behind Curious Toddlers — a Montessori-inspired resource for parents of young children.',
+  alternates: { canonical: '/about' },
 };
 
 export default function AboutPage() {

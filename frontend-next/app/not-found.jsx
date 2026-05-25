@@ -1,5 +1,10 @@
 import Link from 'next/link';
 
+export const metadata = {
+  title: 'Page Not Found | Curious Toddlers',
+  robots: { index: false },
+};
+
 export default function NotFound() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-20 text-center">

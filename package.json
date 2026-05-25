@@ -8,6 +8,7 @@
     "build:frontend": "npm --prefix frontend run build",
     "build:frontend-next": "npm --prefix frontend-next run build",
     "lint:frontend-next": "npm --prefix frontend-next run lint",
+    "test:frontend-next": "npm --prefix frontend-next run test",
     "start:backend": "npm --prefix backend start",
     "install:all": "npm --prefix frontend install && npm --prefix backend install",
     "migrate": "npm --prefix backend run migrate",

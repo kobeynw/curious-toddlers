@@ -2,6 +2,7 @@ export const metadata = {
   title: 'Learning & Montessori | Curious Toddlers',
   description:
     'An introduction to Montessori methodology, its key principles, and curated resources for parents.',
+  alternates: { canonical: '/learn' },
 };
 
 const principles = [
