@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, within, act, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ActivitiesContent from '@/app/activities/ActivitiesContent';
+import ActivitiesPage from '../../src/pages/ActivitiesPage';
 
-vi.mock('@/lib/api', () => ({
+vi.mock('../../src/utils/api', () => ({
   default: vi.fn(),
 }));
 
-vi.mock('@/context/AuthContext', () => ({
+vi.mock('../../src/context/AuthContext', () => ({
   useAuth: () => ({ user: null, loading: false }),
 }));
 
-import api from '@/lib/api';
+import api from '../../src/utils/api';
 
 function makeActivity(overrides = {}) {
   return {
@@ -55,12 +55,12 @@ afterEach(() => {
   cleanup();
 });
 
-describe('ActivitiesContent', () => {
+describe('ActivitiesPage', () => {
   it('shows loading state then renders activities table', async () => {
     const activity = makeActivity();
     mockApi(makeResponse([activity]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
 
     expect(screen.getByText('Loading activities...')).toBeInTheDocument();
 
@@ -76,7 +76,7 @@ describe('ActivitiesContent', () => {
   it('renders activity cards with title, duration, age, and description', async () => {
     mockApi(makeResponse([makeActivity()]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -92,7 +92,7 @@ describe('ActivitiesContent', () => {
   it('shows empty state when no activities returned', async () => {
     mockApi(makeResponse([]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -105,7 +105,7 @@ describe('ActivitiesContent', () => {
   it('shows error message on fetch failure', async () => {
     mockApi(() => Promise.reject(new Error('Network error')));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -121,7 +121,7 @@ describe('ActivitiesContent', () => {
     ];
     mockApi(makeResponse(activities));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -145,7 +145,7 @@ describe('ActivitiesContent', () => {
     ];
     mockApi(makeResponse(activities));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -166,11 +166,11 @@ describe('ActivitiesContent', () => {
     const longDesc = 'A'.repeat(120);
     mockApi(makeResponse([makeActivity({ description: longDesc })]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
-      expect(screen.getByText('A'.repeat(100) + '…')).toBeInTheDocument();
+      expect(screen.getByText('A'.repeat(100) + '\u2026')).toBeInTheDocument();
     });
   });
 
@@ -178,7 +178,7 @@ describe('ActivitiesContent', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mockApi(makeResponse([makeActivity()]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -207,7 +207,7 @@ describe('ActivitiesContent', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mockApi(makeResponse([makeActivity()]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -230,7 +230,7 @@ describe('ActivitiesContent', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     mockApi(makeResponse([makeActivity()]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -252,7 +252,7 @@ describe('ActivitiesContent', () => {
   it('renders search input and range filter dropdowns', async () => {
     mockApi(makeResponse([]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -266,7 +266,7 @@ describe('ActivitiesContent', () => {
   it('calls api with default range params on initial load', async () => {
     mockApi(makeResponse([]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await vi.advanceTimersByTimeAsync(300);
 
     await waitFor(() => {
@@ -283,7 +283,7 @@ describe('ActivitiesContent', () => {
   it('renders page heading', async () => {
     mockApi(makeResponse([]));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
 
     expect(screen.getByRole('heading', { name: 'Activities' })).toBeInTheDocument();
   });
@@ -296,7 +296,7 @@ describe('ActivitiesContent', () => {
     ];
     mockApi(makeResponse(activities));
 
-    render(<ActivitiesContent />);
+    render(<ActivitiesPage />);
     await act(async () => {
       await vi.advanceTimersByTimeAsync(300);
     });

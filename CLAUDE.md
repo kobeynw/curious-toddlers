@@ -8,7 +8,7 @@ Curious Toddlers is a web application to help parents find activities, organizat
 
 ## Tech Stack
 
-- **Frontend**: React + Vite (deployed on Vercel)
+- **Frontend**: Next.js 16 (App Router) + React 19 (deployed on Vercel)
 - **Backend**: JavaScript + Express.js (deployed on DigitalOcean)
 - **Database**: MySQL
 - **CSS**: Tailwind CSS v4
@@ -19,13 +19,13 @@ Curious Toddlers is a web application to help parents find activities, organizat
 ### Setup
 ```bash
 npm run install:all        # Install frontend + backend dependencies
-cp frontend/.env.example frontend/.env
+echo "NEXT_PUBLIC_API_URL=http://localhost:3000" > frontend/.env.local
 cp backend/.env.example backend/.env
 ```
 
 ### Running Dev Servers
 ```bash
-npm run dev:frontend       # Vite dev server on http://localhost:5173
+npm run dev:frontend       # Next.js dev server on http://localhost:5173
 npm run dev:backend        # Express server on http://localhost:3000 (nodemon)
 ```
 
@@ -56,12 +56,13 @@ npm run test --prefix frontend   # Vitest unit tests
 
 ### Other Commands
 ```bash
-npm run build:frontend     # Production build (outputs to frontend/dist/)
+npm run build:frontend     # Next.js production build (outputs to frontend/.next/)
 npm run start:backend      # Start backend without nodemon
 ```
 
 ### Project Structure
-- `frontend/` — React + Vite app (separate npm project)
+- `frontend/` — Next.js 16 App Router app (separate npm project). JavaScript only (`.js`/`.jsx`)
+- `frontend-legacy/` — the retired Vite SPA, kept temporarily as a rollback reference; to be deleted after the Next.js cutover is stable
 - `backend/` — Express API (separate npm project)
 - `backend/routes/` — Express route modules, mounted at `/api`
 - `backend/middleware/auth.js` — JWT verification middleware (use `authenticate` to protect routes)
@@ -70,18 +71,22 @@ npm run start:backend      # Start backend without nodemon
 - `backend/db/pool.js` — MySQL connection pool (mysql2/promise)
 - `backend/db/migrate.js` — Custom migration runner CLI
 - `backend/db/migrations/` — Numbered `.up.sql` / `.down.sql` migration files
-- `frontend/src/utils/api.js` — Fetch wrapper (prepends `VITE_API_URL`, includes credentials, throws on error)
-- `frontend/src/context/AuthContext.jsx` — Auth state provider (`AuthProvider`, `useAuth` hook)
-- `frontend/src/components/ProtectedRoute.jsx` — Route guard (redirects to `/login` if not authenticated)
-- `frontend/src/components/AdminRoute.jsx` — Admin route guard (redirects non-admin users to `/`)
-- `frontend/src/pages/AdminPage.jsx` — Admin activity management page (CRUD table with create/edit/delete modals)
-- `frontend/src/components/Modal.jsx` — Reusable modal overlay component (portal-based, Escape to close)
-- `frontend/src/utils/format.js` — Shared formatting helpers (`formatDuration`, `formatAge`)
+- `frontend/app/` — App Router routes; each page is `app/<route>/page.jsx`. Interactive pages split into a server `page.jsx` (exports `metadata`) + a client `*Content.jsx`
+- `frontend/app/layout.jsx` — root layout (`metadata`, `metadataBase`, `<Providers>` + `<Layout>` shell)
+- `frontend/app/{sitemap.js,robots.js}` — SEO route handlers; `app/not-found.jsx` is the 404
+- `frontend/lib/api.js` — Fetch wrapper (prepends `NEXT_PUBLIC_API_URL`, includes credentials, throws on error)
+- `frontend/lib/format.js` — Shared formatting helpers (`formatDuration`, `formatAge`)
+- `frontend/context/AuthContext.jsx` — Auth state provider (`'use client'`; `AuthProvider`, `useAuth` hook)
+- `frontend/components/ProtectedRoute.jsx` — Client route guard (`useEffect` + `router.replace('/login')` when unauthenticated)
+- `frontend/components/AdminRoute.jsx` — Client admin route guard (redirects non-admin users to `/`)
+- `frontend/components/Modal.jsx` — Reusable modal overlay component (portal-based, Escape to close)
+- Auth/private pages (`/login`, `/register`, `/verify-email`, `/calendar`, `/admin`) carry `robots: noindex`; public pages (`/`, `/about`, `/learn`, `/activities`) have canonical URLs and are in the sitemap
+- Env var: `NEXT_PUBLIC_API_URL` (set in `frontend/.env.local` for dev, in the Vercel project for prod)
 - Root `package.json` has convenience scripts only, no dependencies
 
 ## Architecture
 
-Three-tier architecture: React SPA (Vercel) → Express REST API (DigitalOcean) → MySQL database (DigitalOcean). See `curious_toddlers_system_design.svg` for the full diagram and `curious-toddlers-erd.jpg` for the database ERD.
+Three-tier architecture: Next.js App Router app (Vercel) → Express REST API (DigitalOcean) → MySQL database (DigitalOcean). See `curious_toddlers_system_design.svg` for the full diagram and `curious-toddlers-erd.jpg` for the database ERD.
 
 ## Planned Features
 

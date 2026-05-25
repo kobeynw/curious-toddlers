@@ -5,6 +5,8 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev",
     "build:frontend": "npm --prefix frontend run build",
+    "lint:frontend": "npm --prefix frontend run lint",
+    "test:frontend": "npm --prefix frontend run test",
     "start:backend": "npm --prefix backend start",
     "install:all": "npm --prefix frontend install && npm --prefix backend install",
     "migrate": "npm --prefix backend run migrate",
