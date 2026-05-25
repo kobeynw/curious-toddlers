@@ -1,31 +1,19 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import AdminRoute from '../../src/components/AdminRoute';
+import { render, screen, waitFor, cleanup } from '@testing-library/react';
+import AdminRoute from '@/components/AdminRoute';
+import { mockRouter } from '../__mocks__/next-navigation';
 
-vi.mock('../../src/context/AuthContext', () => ({
+vi.mock('@/context/AuthContext', () => ({
   useAuth: vi.fn(),
 }));
 
-import { useAuth } from '../../src/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 
-function renderAt(path) {
+function renderRoute() {
   return render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <div>admin-content</div>
-            </AdminRoute>
-          }
-        />
-        <Route path="/login" element={<div>login-page</div>} />
-        <Route path="/verify-email" element={<div>verify-page</div>} />
-        <Route path="/" element={<div>home-page</div>} />
-      </Routes>
-    </MemoryRouter>
+    <AdminRoute>
+      <div>admin-content</div>
+    </AdminRoute>
   );
 }
 
@@ -38,40 +26,47 @@ afterEach(() => {
 });
 
 describe('AdminRoute', () => {
-  it('renders nothing while loading', () => {
+  it('renders nothing and does not redirect while loading', () => {
     useAuth.mockReturnValue({ user: null, loading: true });
 
-    const { container } = renderAt('/admin');
+    const { container } = renderRoute();
     expect(container).toBeEmptyDOMElement();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
-  it('redirects to /login when user is not authenticated', () => {
+  it('redirects to /login when user is not authenticated', async () => {
     useAuth.mockReturnValue({ user: null, loading: false });
 
-    renderAt('/admin');
-    expect(screen.getByText('login-page')).toBeInTheDocument();
+    renderRoute();
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith('/login');
+    });
     expect(screen.queryByText('admin-content')).not.toBeInTheDocument();
   });
 
-  it('redirects to /verify-email when user is not verified', () => {
+  it('redirects to /verify-email when user is not verified', async () => {
     useAuth.mockReturnValue({
       user: { id: 1, name: 'Test', isVerified: false, role: 'admin' },
       loading: false,
     });
 
-    renderAt('/admin');
-    expect(screen.getByText('verify-page')).toBeInTheDocument();
+    renderRoute();
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith('/verify-email');
+    });
     expect(screen.queryByText('admin-content')).not.toBeInTheDocument();
   });
 
-  it('redirects to / when user role is not admin', () => {
+  it('redirects to / when user role is not admin', async () => {
     useAuth.mockReturnValue({
       user: { id: 1, name: 'Test', isVerified: true, role: 'user' },
       loading: false,
     });
 
-    renderAt('/admin');
-    expect(screen.getByText('home-page')).toBeInTheDocument();
+    renderRoute();
+    await waitFor(() => {
+      expect(mockRouter.replace).toHaveBeenCalledWith('/');
+    });
     expect(screen.queryByText('admin-content')).not.toBeInTheDocument();
   });
 
@@ -81,7 +76,8 @@ describe('AdminRoute', () => {
       loading: false,
     });
 
-    renderAt('/admin');
+    renderRoute();
     expect(screen.getByText('admin-content')).toBeInTheDocument();
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 });

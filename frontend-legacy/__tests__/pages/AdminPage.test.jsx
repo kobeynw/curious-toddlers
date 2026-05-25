@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, within, cleanup } from '@testing-library/react';
+import { render, screen, waitFor, within, act, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import AdminContent from '@/app/admin/AdminContent';
+import AdminPage from '../../src/pages/AdminPage';
 
-vi.mock('@/lib/api', () => ({
+vi.mock('../../src/utils/api', () => ({
   default: vi.fn(),
 }));
 
-import api from '@/lib/api';
+import api from '../../src/utils/api';
 
 function makeActivity(overrides = {}) {
   return {
@@ -50,11 +50,11 @@ afterEach(() => {
   cleanup();
 });
 
-describe('AdminContent', () => {
+describe('AdminPage', () => {
   it('shows loading then renders activity table', async () => {
     mockApi({ activities: [makeActivity()] });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     expect(screen.getByText('Loading activities...')).toBeInTheDocument();
 
     await waitFor(() => {
@@ -71,7 +71,7 @@ describe('AdminContent', () => {
       ],
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Short')).toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('AdminContent', () => {
       ],
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Finger Painting')).toBeInTheDocument();
@@ -109,7 +109,7 @@ describe('AdminContent', () => {
   it('shows empty state when there are no activities', async () => {
     mockApi({ activities: [] });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
 
     await waitFor(() => {
       expect(screen.getByText('No activities found.')).toBeInTheDocument();
@@ -122,7 +122,7 @@ describe('AdminContent', () => {
       return Promise.reject(new Error('Fetch failed'));
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Fetch failed')).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('AdminContent', () => {
       return Promise.resolve({ activities: [], nextCursor: null });
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
 
     await waitFor(() => {
       expect(screen.getByText('Page1-A')).toBeInTheDocument();
@@ -156,7 +156,7 @@ describe('AdminContent', () => {
     const user = userEvent.setup();
     mockApi({ activities: [makeActivity()] });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Finger Painting')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Add Activity' }));
@@ -182,7 +182,7 @@ describe('AdminContent', () => {
       ],
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Edit Me')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
@@ -213,7 +213,7 @@ describe('AdminContent', () => {
       },
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Original')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Add Activity' }));
@@ -244,7 +244,7 @@ describe('AdminContent', () => {
       },
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Old Title')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
@@ -270,7 +270,7 @@ describe('AdminContent', () => {
       },
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('No activities found.')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Add Activity' }));
@@ -302,7 +302,7 @@ describe('AdminContent', () => {
       },
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('No activities found.')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Add Activity' }));
@@ -335,7 +335,7 @@ describe('AdminContent', () => {
       ],
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Tagged')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Edit' }));
@@ -361,7 +361,7 @@ describe('AdminContent', () => {
       },
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Doomed')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Delete' }));
@@ -393,7 +393,7 @@ describe('AdminContent', () => {
       },
     });
 
-    render(<AdminContent />);
+    render(<AdminPage />);
     await waitFor(() => expect(screen.getByText('Safe')).toBeInTheDocument());
 
     await user.click(screen.getByRole('button', { name: 'Delete' }));

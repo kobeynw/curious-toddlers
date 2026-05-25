@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, act, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '../../src/context/AuthContext';
 
 // Mock the api module
-vi.mock('@/lib/api', () => ({
+vi.mock('../../src/utils/api', () => ({
   default: vi.fn(),
 }));
 
-import api from '@/lib/api';
+import api from '../../src/utils/api';
 
 function TestConsumer() {
   const { user, loading, login, register, logout } = useAuth();
