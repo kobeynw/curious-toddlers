@@ -8,7 +8,6 @@ import { formatDuration } from '@/lib/format';
 import { useAuth } from '@/context/AuthContext';
 import CalendarDayColumn from '@/components/CalendarDayColumn';
 import CalendarQuickAdd from '@/components/CalendarQuickAdd';
-import ActivityDetailModal from '@/components/ActivityDetailModal';
 
 const DAY_ORDER = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -22,7 +21,6 @@ export default function CalendarContent() {
   const [calendarLoading, setCalendarLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeCard, setActiveCard] = useState(null);
-  const [detailActivity, setDetailActivity] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const tooltipRef = useRef(null);
 
@@ -173,7 +171,6 @@ export default function CalendarContent() {
                 day={day}
                 activities={days[day]}
                 onRemove={handleRemove}
-                onActivityClick={setDetailActivity}
               />
             ))}
           </div>
@@ -193,8 +190,6 @@ export default function CalendarContent() {
       <div className="md:w-1/2">
         <CalendarQuickAdd onActivityAdded={fetchCalendar} />
       </div>
-
-      <ActivityDetailModal activity={detailActivity} onClose={() => setDetailActivity(null)} />
     </div>
   );
 }
