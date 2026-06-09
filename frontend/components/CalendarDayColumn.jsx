@@ -3,7 +3,7 @@
 import { useDroppable } from '@dnd-kit/core';
 import CalendarActivityCard from './CalendarActivityCard';
 
-export default function CalendarDayColumn({ day, activities, onRemove, onActivityClick }) {
+export default function CalendarDayColumn({ day, activities, onRemove }) {
   const { setNodeRef, isOver } = useDroppable({ id: day });
 
   return (
@@ -23,7 +23,6 @@ export default function CalendarDayColumn({ day, activities, onRemove, onActivit
             title={a.title}
             activity={a}
             onRemove={onRemove}
-            onActivityClick={onActivityClick}
           />
         ))}
       </div>

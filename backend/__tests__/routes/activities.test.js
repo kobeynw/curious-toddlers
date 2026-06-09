@@ -255,3 +255,120 @@ describe('GET /api/activities', () => {
     expect(params).toEqual([50, '%paint%', '%paint%', 12, 18]);
   });
 });
+
+describe('GET /api/activities/index', () => {
+  it('returns id + updatedAt for every activity', async () => {
+    pool.query.mockResolvedValueOnce([[
+      { id: 3, updated_at: '2026-03-31T00:00:00.000Z' },
+      { id: 2, updated_at: '2026-03-30T00:00:00.000Z' },
+      { id: 1, updated_at: '2026-03-29T00:00:00.000Z' },
+    ]]);
+
+    const res = await request('GET', '/api/activities/index');
+    expect(res.status).toBe(200);
+    expect(res.body.activities).toEqual([
+      { id: 3, updatedAt: '2026-03-31T00:00:00.000Z' },
+      { id: 2, updatedAt: '2026-03-30T00:00:00.000Z' },
+      { id: 1, updatedAt: '2026-03-29T00:00:00.000Z' },
+    ]);
+
+    const [sql] = pool.query.mock.calls[0];
+    expect(sql).toContain('SELECT id, updated_at FROM Activity');
+    expect(sql).toContain('ORDER BY id DESC');
+  });
+
+  it('returns empty list when no activities exist', async () => {
+    pool.query.mockResolvedValueOnce([[]]);
+
+    const res = await request('GET', '/api/activities/index');
+    expect(res.status).toBe(200);
+    expect(res.body.activities).toEqual([]);
+  });
+
+  it('returns 500 on database error', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    pool.query.mockRejectedValueOnce(new Error('DB connection failed'));
+
+    const res = await request('GET', '/api/activities/index');
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Internal server error');
+    spy.mockRestore();
+  });
+});
+
+describe('GET /api/activities/:id', () => {
+  it('returns a single activity with tags', async () => {
+    pool.query.mockResolvedValueOnce([[makeActivity(7)]]);
+    pool.query.mockResolvedValueOnce([[
+      { activity_id: 7, id: 2, name: 'Sensory' },
+      { activity_id: 7, id: 5, name: 'Outdoor' },
+    ]]);
+
+    const res = await request('GET', '/api/activities/7');
+    expect(res.status).toBe(200);
+    expect(res.body.activity.id).toBe(7);
+    expect(res.body.activity.tags).toEqual([
+      { id: 2, name: 'Sensory' },
+      { id: 5, name: 'Outdoor' },
+    ]);
+
+    const [sql, params] = pool.query.mock.calls[0];
+    expect(sql).toContain('SELECT * FROM Activity WHERE id = ?');
+    expect(params).toEqual([7]);
+  });
+
+  it('returns an activity with an empty tags array when it has no tags', async () => {
+    pool.query.mockResolvedValueOnce([[makeActivity(8)]]);
+    pool.query.mockResolvedValueOnce([[]]);
+
+    const res = await request('GET', '/api/activities/8');
+    expect(res.status).toBe(200);
+    expect(res.body.activity.tags).toEqual([]);
+  });
+
+  it('returns 404 when the activity does not exist', async () => {
+    pool.query.mockResolvedValueOnce([[]]);
+
+    const res = await request('GET', '/api/activities/99999');
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe('Activity not found');
+  });
+
+  it('returns 400 for a non-numeric id', async () => {
+    const res = await request('GET', '/api/activities/1abc');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid activity ID');
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for a non-integer id', async () => {
+    const res = await request('GET', '/api/activities/1.5');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid activity ID');
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for a zero or negative id', async () => {
+    const res = await request('GET', '/api/activities/0');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid activity ID');
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 for an id with a leading zero', async () => {
+    const res = await request('GET', '/api/activities/01');
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('Invalid activity ID');
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 on database error', async () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    pool.query.mockRejectedValueOnce(new Error('DB connection failed'));
+
+    const res = await request('GET', '/api/activities/7');
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Internal server error');
+    spy.mockRestore();
+  });
+});

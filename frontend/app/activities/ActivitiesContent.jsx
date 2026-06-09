@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { Timer, Baby } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import { formatDuration, formatAge } from '@/lib/format';
 import AddToCalendarModal from '@/components/AddToCalendarModal';
-import ActivityDetailModal from '@/components/ActivityDetailModal';
 
 const AGE_OPTIONS = [
   { value: 0, label: 'Newborn' },
@@ -52,7 +52,6 @@ export default function ActivitiesContent() {
   const [selectedTagIds, setSelectedTagIds] = useState(new Set());
   const [tagsExpanded, setTagsExpanded] = useState(false);
   const [calendarActivity, setCalendarActivity] = useState(null);
-  const [detailActivity, setDetailActivity] = useState(null);
 
   const nextCursorRef = useRef(nextCursor);
   const loadingMoreRef = useRef(loadingMore);
@@ -315,33 +314,32 @@ export default function ActivitiesContent() {
           {activities.map((activity) => (
             <div
               key={activity.id}
-              onClick={() =>
-                setDetailActivity({
-                  ...activity,
-                  minAge: activity.min_age,
-                })
-              }
-              className="bg-sand-surface border border-sand-border rounded-lg p-5 hover:shadow-md cursor-pointer transition-shadow flex flex-col"
+              className="relative bg-sand-surface border border-sand-border rounded-lg p-5 hover:shadow-md transition-shadow flex flex-col"
             >
-              <h2 className="text-lg font-semibold text-ink">{activity.title}</h2>
+              {/* Covering link makes the whole card navigable while keeping the
+                  "Add to Calendar" button a sibling (valid HTML, no nested <a>). */}
+              <Link
+                href={`/activities/${activity.id}`}
+                aria-label={activity.title}
+                className="absolute inset-0 z-0 rounded-lg"
+              />
 
-              <div className="flex gap-4 mt-2 text-sm text-ink">
+              <h2 className="relative z-10 text-lg font-semibold text-ink pointer-events-none">{activity.title}</h2>
+
+              <div className="relative z-10 flex gap-4 mt-2 text-sm text-ink pointer-events-none">
                 <span className="flex items-center gap-1"><Timer size={14} />{formatDuration(activity.duration)}</span>
                 <span className="flex items-center gap-1"><Baby size={14} />{formatAge(activity.min_age)}+</span>
               </div>
 
-              <p className="text-ink-muted text-sm mt-2 flex-1">
+              <p className="relative z-10 text-ink-muted text-sm mt-2 flex-1 pointer-events-none">
                 {truncate(activity.description, 100)}
               </p>
 
               {user && (
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCalendarActivity(activity);
-                  }}
-                  className="mt-4 bg-terra text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-terra-hover self-start"
+                  onClick={() => setCalendarActivity(activity)}
+                  className="relative z-10 mt-4 bg-terra text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-terra-hover self-start"
                 >
                   Add to Calendar
                 </button>
@@ -359,11 +357,6 @@ export default function ActivitiesContent() {
         activity={calendarActivity}
         onClose={() => setCalendarActivity(null)}
         onAdd={handleAddToCalendar}
-      />
-
-      <ActivityDetailModal
-        activity={detailActivity}
-        onClose={() => setDetailActivity(null)}
       />
     </div>
   );

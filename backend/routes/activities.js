@@ -84,4 +84,42 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/activities/index — id + updated_at for every activity (SSG params + sitemap)
+// Must be declared before GET /:id so the param route doesn't swallow it.
+router.get('/index', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT id, updated_at FROM Activity ORDER BY id DESC');
+    res.json({ activities: rows.map((r) => ({ id: r.id, updatedAt: r.updated_at })) });
+  } catch (err) {
+    console.error('Activities index fetch error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/activities/:id — single activity with tags
+router.get('/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  // Strict: reject "1abc", "1.5", "01", negatives (parseInt would accept "1abc").
+  if (!Number.isInteger(id) || id < 1 || String(id) !== req.params.id) {
+    return res.status(400).json({ error: 'Invalid activity ID' });
+  }
+
+  try {
+    const [rows] = await pool.query('SELECT * FROM Activity WHERE id = ?', [id]);
+    if (rows.length === 0) return res.status(404).json({ error: 'Activity not found' });
+
+    const activity = rows[0];
+    const [tagRows] = await pool.query(
+      'SELECT at.activity_id, t.id, t.name FROM ActivityTag at JOIN Tag t ON t.id = at.tag_id WHERE at.activity_id = ?',
+      [id]
+    );
+    activity.tags = tagRows.map(({ id: tid, name }) => ({ id: tid, name }));
+
+    res.json({ activity });
+  } catch (err) {
+    console.error('Activity fetch error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
