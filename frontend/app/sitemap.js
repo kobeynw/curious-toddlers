@@ -1,5 +1,8 @@
 const BASE_URL = 'https://www.curioustoddlers.com';
 
+// ISR: regenerate hourly at runtime so the activity URLs aren't frozen at build.
+export const revalidate = 3600;
+
 export default async function sitemap() {
   const now = new Date();
 
